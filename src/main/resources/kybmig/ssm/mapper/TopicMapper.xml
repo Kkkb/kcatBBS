@@ -1,0 +1,160 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 和 java mapper 的类名一样，从包名开始打，有自动补全-->
+<mapper namespace="kybmig.ssm.mapper.TopicMapper">
+    <!-- resultType 和 mapper 中的方法返回值一样，不能省，从包名开始打，有自动补全-->
+    <!--  里面的 sql 语句，有自动补全,要配置 ide 的 datasource -->
+    <select id="selectAllTopic" resultMap="selectOneWithUserMap">
+        SELECT * FROM ssm.topic ORDER BY topic.updatedTime DESC
+    </select>
+
+    <resultMap id="selectOneWithUserMap" type="kybmig.ssm.model.TopicModel">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="userId" column="userId" />
+        <result property="type" column="type"/>
+        <association property="numberOfComments" column="id" javaType="java.lang.Integer" select="kybmig.ssm.mapper.TopicCommentMapper.numberOfCommentsByTopicId"/>
+        <association property="user" column="userId" javaType="kybmig.ssm.model.UserModel" select="kybmig.ssm.mapper.UserMapper.selectUser"/>
+    </resultMap>
+
+    <!-- 传参数方式1，直接传入一个基本类型 int，这个 int 会被绑定到 ${id} -->
+    <select id="selectTopic" resultType="kybmig.ssm.model.TopicModel">
+        SELECT * FROM ssm.topic WHERE id = ${id}
+    </select>
+
+    <!-- 传参方式2，传入一个对象。content 代表这个对象的 content 属性，注意这个对象要有 getter setter -->
+    <!-- useGeneratedKeys keyProperty 当我传入一个对象的时候，这两个属性可以把数据库创建的 id 赋值给这个对象 -->
+    <insert id="insertTopic" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ssm.topic (content, title, userId, createdTime, updatedTime, clickCount, type, rawContent)
+        VALUES (#{content}, #{title}, #{userId}, #{createdTime}, #{updatedTime}, #{clickCount}, #{type}, #{rawContent})
+    </insert>
+    
+    <update id="updateTopic">
+        UPDATE ssm.topic SET content = #{content}, title = #{title}, updatedTime = #{updatedTime}, type = #{type}, rawContent = #{rawContent} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteTopic">
+        DELETE FROM ssm.topic WHERE id = #{id}
+    </delete>
+
+    <select id="selectOneWithComments" resultMap="selectOneWithCommentsMap">
+        SELECT
+            topic.id,
+            topic.title,
+            topic.content,
+            topic.userId,
+            topic.clickCount,
+            topic.createdTime,
+            topic.updatedTime,
+            topic.type,
+            topiccomment.id as c_id,
+            topiccomment.content as c_content,
+            topiccomment.userId as c_userId,
+            topiccomment.createdTime as c_createdTime,
+            topiccomment.updatedTime as c_updatedTime
+        FROM
+            ssm.topic left join topiccomment
+                                on topic.id = topiccomment.topicId
+        WHERE topic.id = #{id}
+    </select>
+
+    <resultMap id="selectOneWithCommentsMap" type="kybmig.ssm.model.TopicModel">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="userId" column="userId" />
+        <result property="clickCount" column="clickCount" />
+        <result property="createdTime" column="createdTime" />
+        <result property="updatedTime" column="updatedTime" />
+        <result property="type" column="type" />
+        <association property="user" column="userId" javaType="kybmig.ssm.model.UserModel" select="kybmig.ssm.mapper.UserMapper.selectUser"/>
+        <collection property="commentList" ofType="kybmig.ssm.model.TopicCommentModel">
+            <id property="id" column="c_id" />
+            <result property="content" column="c_content" />
+            <result property="userId" column="c_userId" />
+            <result property="createdTime" column="c_createdTime" />
+            <result property="updatedTime" column="c_updatedTime" />
+            <association property="user" column="c_userId" javaType="kybmig.ssm.model.UserModel" select="kybmig.ssm.mapper.UserMapper.selectUser"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectTopicByUserId" resultMap="selectWithUserMap">
+        SELECT * FROM ssm.topic WHERE userId = ${id} ORDER BY topic.createdTime DESC
+
+    </select>
+
+    <resultMap id="selectWithUserMap" type="kybmig.ssm.model.TopicModel">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="userId" column="userId" />
+        <association property="numberOfComments" column="id" javaType="java.lang.Integer" select="kybmig.ssm.mapper.TopicCommentMapper.numberOfCommentsByTopicId"/>
+        <association property="latestComment" column="id" javaType="kybmig.ssm.model.TopicCommentModel" select="kybmig.ssm.mapper.TopicCommentMapper.selectLatestCommentByTopicId"/>
+        <association property="user" column="userId" javaType="kybmig.ssm.model.UserModel" select="kybmig.ssm.mapper.UserMapper.selectUser"/>
+    </resultMap>
+
+    <select id="selectTopicByComment" resultMap="selectTopicByCommentMap">
+        SELECT
+        topic.id,
+        topic.title,
+        topic.content,
+        topic.userId,
+        topic.createdTime,
+        topic.updatedTime,
+        topic.clickCount,
+        topiccomment.id as c_id,
+        topic.content as c_content,
+        topic.userId as c_userId,
+        topic.createdTime as c_createdTime,
+        topic.updatedTime as c_updatedTime
+        FROM
+        ssm.topic join ssm.topiccomment
+        on topic.id = topiccomment.topicId
+        WHERE topiccomment.userId = #{userId}
+        ORDER BY topiccomment.updatedTime DESC;
+
+
+    </select>
+
+    <resultMap id="selectTopicByCommentMap" type="kybmig.ssm.model.TopicModel">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="userId" column="userId" />
+        <result property="createdTime" column="createdTime" />
+        <result property="updatedTime" column="updatedTime" />
+        <result property="clickCount" column="clickCount" />
+        <association property="latestComment" column="id" javaType="kybmig.ssm.model.TopicCommentModel" select="kybmig.ssm.mapper.TopicCommentMapper.selectLatestCommentByTopicId"/>
+        <association property="numberOfComments" column="id" javaType="java.lang.Integer" select="kybmig.ssm.mapper.TopicCommentMapper.numberOfCommentsByTopicId"/>
+        <association property="user" column="userId" javaType="kybmig.ssm.model.UserModel" select="kybmig.ssm.mapper.UserMapper.selectUser"/>
+    </resultMap>
+
+    <update id="updateClickCount">
+        UPDATE ssm.topic SET clickCount = #{clickCount} WHERE id = #{id}
+    </update>
+
+    <select id="numberOfTopicByUserId" resultType="java.lang.Integer">
+        SELECT count(*) FROM ssm.topic WHERE userId = #{id}
+    </select>
+
+    <select id="selectTopicByType" resultMap="selectTopicByGameMap">
+        SELECT * FROM ssm.topic WHERE type = #{type} ORDER BY topic.updatedTime DESC
+
+    </select>
+
+    <resultMap id="selectTopicByGameMap" type="kybmig.ssm.model.TopicModel">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="userId" column="userId" />
+        <result property="type" column="type"/>
+        <association property="numberOfComments" column="id" javaType="java.lang.Integer" select="kybmig.ssm.mapper.TopicCommentMapper.numberOfCommentsByTopicId"/>
+        <association property="user" column="userId" javaType="kybmig.ssm.model.UserModel" select="kybmig.ssm.mapper.UserMapper.selectUser"/>
+    </resultMap>
+
+    <select id="selectTopicByClickTimes" resultMap="selectOneWithUserMap">
+        SELECT * FROM ssm.topic ORDER BY topic.clickCount DESC LIMIT 10
+    </select>
+</mapper>
