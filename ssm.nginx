@@ -4,4 +4,8 @@ server {
     location / {
         proxy_pass http://localhost:8080;
     }
+
+    location /avatar/ {
+        alias /var/lib/tomcat9/webapps/images/;
+    }
 }
