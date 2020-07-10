@@ -99,3 +99,8 @@
 .visit-a:visited {
     color: #777777 !important;
 }
+
+.copyright {
+    text-decoration: none !important;
+    color: cornflowerblue;
+}
