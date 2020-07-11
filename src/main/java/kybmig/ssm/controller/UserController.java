@@ -239,4 +239,13 @@ public class UserController {
         return m;
     }
 
+    @GetMapping("/about")
+    public ModelAndView about(HttpServletRequest request) {
+        UserModel currentUser = userService.currentUser(request);
+        ModelAndView m = new ModelAndView("user/about");
+        m.addObject("currentUser", currentUser);
+
+        return m;
+    }
+
 }

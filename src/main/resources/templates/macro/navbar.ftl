@@ -48,6 +48,7 @@
                             <li><a href="/users">用户图库</a></li>
                             <li><a href="/user/edit?id=${currentUser.id}">个人设置</a></li>
                             <li><a href="/admin">用户管理</a></li>
+                            <li><a href="/about">关于本站</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="/logout">退出</a></li>
                         </ul>
