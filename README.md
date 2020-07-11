@@ -2,7 +2,7 @@
 
 基于 Spring + Spring MVC + MyBatis 的 个人论坛
 
-> http://120.78.166.99/
+> http://www.kcat.top/
 
 数据存储使用 MySQL，ORM 采用 MyBatis，模板引擎基于 FreeMarker, SpringMVC 架构。
 
