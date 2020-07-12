@@ -34,3 +34,5 @@ out/
 
 
 gradle
+
+*.properties
