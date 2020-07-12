@@ -47,16 +47,20 @@ public class UserController {
     }
 
     @PostMapping("/user/login")
-    public String login(HttpServletRequest request) {
+    public ModelAndView login(HttpServletRequest request) {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         UserModel user = userService.findByUsername(username);
 
         if (userService.validLogin(username, password)) {
             request.getSession().setAttribute("user_id", user.getId());
-            return "redirect:/";
+            return new ModelAndView("redirect:/");
         } else {
-            return "redirect:/login";
+            UserModel currentUser = userService.currentUser(request);
+            ModelAndView m = new ModelAndView("user/login");
+            m.addObject("currentUser", currentUser);
+            m.addObject("invalidLogin", true);
+            return m;
         }
     }
 
@@ -136,10 +140,14 @@ public class UserController {
     }
 
     @PostMapping("/reset/send")
-    public ModelAndView reset(String username) {
+    public ModelAndView reset(String username, HttpServletRequest request) {
+        UserModel currentUser = userService.currentUser(request);
         UserModel user = userService.findByUsername(username);
         if (user == null) {
-            return new ModelAndView("redirect:/login");
+            ModelAndView m = new ModelAndView("/user/reset_index");
+            m.addObject("existUser", false);
+            m.addObject("currentUser", currentUser);
+            return m;
         }
 
         Integer userId = user.getId();
@@ -148,20 +156,25 @@ public class UserController {
         this.tokenMap.put(token , userId);
 
         String address = user.getEmail();
-        String title = "reset password";
-        String content = String.format("http://localhost:9000/reset/view?token=%s", token);
+        String title = String.format("Hi! %s, reset password - kcat.top", user.getUsername());
+        String content = String.format("http://www.kcat.top/reset/view?token=%s", token);
         asyncTask.sendMail(address, title, content);
 
-        return new ModelAndView("redirect:/login");
+        ModelAndView m = new ModelAndView("/user/reset_index");
+        m.addObject("existUser", true);
+        m.addObject("currentUser", currentUser);
+        return m;
     }
 
     @GetMapping("/reset/view")
     public ModelAndView resetView(String token) {
+        UserModel currentUser = userService.guest();
         if (tokenMap == null) {
             return new ModelAndView("redirect:/login");
         } else if (tokenMap.containsKey(token)) {
             ModelAndView m = new ModelAndView("/user/reset");
             m.addObject("token", token);
+            m.addObject("currentUser", currentUser);
             return m;
         } else {
             return new ModelAndView("redirect:/login");

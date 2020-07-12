@@ -27,16 +27,21 @@
                     <p>请输入您的用户名。您会收到一封包含创建新密码链接的电子邮件。</p>
                     <input type="text" class="form-control" name="username" placeholder="请输入用户名">
                 </div>
-                <button type="submit" class="btn btn-default">忘记密码</button>
+                <button type="submit" class="btn btn-default" id="id-button-send">忘记密码</button>
             </form>
         </div>
     </div>
 
     <@footer/>
 
-    <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    <script src="/sweet.js"></script>
+    <script>
+    <#if existUser??>
+        <#if existUser == true>
+            swal("发送成功", "请注意查收邮件", "success");
+        <#else>
+            swal("用户名不存在", "请尝试重新输入", "error");
+        </#if>
+    </#if>
+    </script>
     </body>
 </html>
